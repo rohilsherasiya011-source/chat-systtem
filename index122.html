@@ -1,0 +1,527 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>AI Game Design Prototype — Preview</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="package.json">
+
+    <style>
+        body {
+            font-family: system-ui, Roboto, Arial;
+            padding: 16px;
+            background: #f6f7fb;
+            color: #0b1220
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px
+        }
+        
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(12, 12, 38, 0.06)
+        }
+        
+        .asset {
+            display: inline-block;
+            width: 150px;
+            height: 150px;
+            margin: 8px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+        
+        .asset img {
+            max-width: 100%;
+            max-height: 100%
+        }
+        
+        .controls {
+            margin-top: 12px
+        }
+        
+        input[type=file] {
+            display: inline-block
+        }
+        
+        .log {
+            margin-top: 12px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            background: #111;
+            color: #9ad;
+            padding: 10px;
+            border-radius: 6px;
+            max-height: 240px;
+            overflow: auto
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>AI Game Design — Preview</h1>
+        <div>Prototype — no real ML</div>
+    </header>
+
+    <main>
+        <section>
+            <p>Upload an image/video to simulate the pipeline (server must be running).</p>
+            <div class="controls">
+                <input id="file" type="file">
+                <button id="btnUpload">Upload & Generate</button>
+            </div>
+            <div id="bundleInfo"></div>
+            <div id="assets"></div>
+            <div class="log" id="log">Logs will appear here...</div>
+        </section>
+    </main>
+
+    <script>
+        const fileInput = document.getElementById('file');
+        const btn = document.getElementById('btnUpload');
+        const log = document.getElementById('log');
+        const assetsDiv = document.getElementById('assets');
+        const bundleInfo = document.getElementById('bundleInfo');
+
+        function write(msg) {
+            log.textContent = (new Date()).toLocaleTimeString() + ' ' + msg + '\\n' + log.textContent;
+        } 
+
+        btn.addEventListener('click', async() => {
+            const f = fileInput.files[0];
+            if (!f) {
+                alert('choose a file');
+                return;
+            }
+            write('Uploading ' + f.name);
+            const form = new FormData();
+            form.append('file', f);
+            form.append('meta', JSON.stringify({
+                source: 'preview-ui'
+            }));
+            try {
+                const resp = await fetch('/upload', {
+                    method: 'POST',
+                    body: form
+                });
+                const json = await resp.json();
+                write('Server response: ' + JSON.stringify(json, null, 2));
+                if (json.bundleId) {
+                    bundleInfo.innerHTML = '<div>Bundle ID: ' + json.bundleId + '</div>';
+                    loadBundle(json.bundleId);
+                }
+            } catch (e) {
+                write('Upload error ' + e.message);
+            }
+        });
+
+        async function loadBundle(id) {
+            assetsDiv.innerHTML = '';
+            write('Fetching bundle ' + id);
+            const manifest = await fetch('/bundle/' + id).then(r => r.json());
+            write('Manifest: ' + JSON.stringify(manifest, null, 2));
+            for (const a of manifest.assets) {
+                const el = document.createElement('div');
+                el.className = 'asset';
+                if (a.path.endsWith('.png')) {
+                    const img = document.createElement('img');
+                    img.src = a.path;
+                    el.appendChild(img);
+                } else {
+                    el.textContent = a.name;
+                }
+                assetsDiv.appendChild(el);
+            }
+        }
+    </script>
+
+    <script>
+        // selector.js — simple scoring and selection logic
+        // In production this would use an analytics model predicting engagement/revenue and compliance checks.
+
+        function selectBestOutput(candidates = []) {
+            // Score = confidence * (1 + small random factor) — simple example
+            let best = null;
+            let bestScore = -Infinity;
+            for (const c of candidates) {
+                const conf = (c.meta && c.meta.confidence) || 0.5;
+                const score = conf * (1 + Math.random() * 0.12);
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = c;
+                }
+            }
+            return best || candidates[0];
+        }
+
+        module.exports = {
+            selectBestOutput
+        };
+    </script>
+    <script>
+        // assetGenerator.js — stubbed ML generator calls.
+        // Replace the stub implementations with calls to actual model servers (TorchServe, Triton, custom HTTP model endpoints, etc.)
+        const fs = require('fs');
+        const path = require('path');
+
+        /**
+         * generateAssetsFromModel(route, { id, meta })
+         * returns: [{ type: 'sprite'|'bg'|'logo'|'anim', assets: [ {type, ext, data: base64} ] }, ...]
+         */
+        async function generateAssetsFromModel(route, {
+            id,
+            meta
+        }) {
+            console.log(`[generator] Invoking pipeline=${route.pipeline} model=${route.model} for ${route.normalizedPath}`);
+            // In an actual system you'd:
+            //  - call the specific model endpoint with the normalized media
+            //  - receive outputs (images/videos/spritesheets) and metrics (confidence, quality)
+            //  - return them for selection
+            // Here we produce mocked outputs using a tiny placeholder image.
+
+            // tiny 1x1 PNG (base64) as placeholder — replace with real asset bytes
+            const placeholderPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
+            const placeholderMp4Base64 = ''; // omitted for brevity
+
+            const outputs = [];
+
+            if (route.pipeline === 'imageStyleTransfer') {
+                outputs.push({
+                    type: 'spritePack',
+                    assets: [{
+                        type: 'character',
+                        ext: 'png',
+                        data: placeholderPngBase64
+                    }, {
+                        type: 'background',
+                        ext: 'png',
+                        data: placeholderPngBase64
+                    }],
+                    meta: {
+                        confidence: 0.72,
+                        method: 'style-transfer'
+                    }
+                });
+                // second candidate (alts)
+                outputs.push({
+                    type: 'spritePack',
+                    assets: [{
+                        type: 'character',
+                        ext: 'png',
+                        data: placeholderPngBase64
+                    }, {
+                        type: 'background',
+                        ext: 'png',
+                        data: placeholderPngBase64
+                    }],
+                    meta: {
+                        confidence: 0.63,
+                        method: 'gan-variant'
+                    }
+                });
+            } else if (route.pipeline === 'videoToAnimation') {
+                outputs.push({
+                    type: 'animBundle',
+                    assets: [{
+                            type: 'loop',
+                            ext: 'mp4',
+                            data: placeholderMp4Base64
+                        }, // empty for now
+                        {
+                            type: 'poster',
+                            ext: 'png',
+                            data: placeholderPngBase64
+                        }
+                    ],
+                    meta: {
+                        confidence: 0.68
+                    }
+                });
+            } else {
+                outputs.push({
+                    type: 'generic',
+                    assets: [{
+                        type: 'logo',
+                        ext: 'png',
+                        data: placeholderPngBase64
+                    }],
+                    meta: {
+                        confidence: 0.5
+                    }
+                });
+            }
+
+            // Simulate async latency
+            await new Promise(r => setTimeout(r, 400));
+            return outputs;
+        }
+
+        module.exports = {
+            generateAssetsFromModel
+        };
+    </script>
+
+    <script>
+        // modelRouter.js — simple rule-based router that decides which model pipeline to use
+        // In production this would be a learned router/transformer that inspects features/metadata.
+        const path = require('path');
+
+        function routeToModel({
+            path: normalizedPath,
+            meta = {}
+        }) {
+            const ext = (path.extname(normalizedPath) || '').toLowerCase();
+            if (ext === '.png') return {
+                pipeline: 'imageStyleTransfer',
+                model: 'img-transformer-v1',
+                normalizedPath
+            };
+            if (ext === '.mp4') return {
+                pipeline: 'videoToAnimation',
+                model: 'vid-transformer-v2',
+                normalizedPath
+            };
+            if (ext === '.wav') return {
+                pipeline: 'audioToVisuals',
+                model: 'audio2vis-v1',
+                normalizedPath
+            };
+            // fallback
+            return {
+                pipeline: 'genericAssetGen',
+                model: 'multimodal-ensemble',
+                normalizedPath
+            };
+        }
+
+        module.exports = {
+            routeToModel
+        };
+    </script>
+    <script>
+        // transcode.js — use ffmpeg via fluent-ffmpeg to normalize media
+        const ffmpeg = require('fluent-ffmpeg');
+        const path = require('path');
+        const fs = require('fs');
+
+        function transcodeFile(inputPath, opts = {}) {
+            // This function normalizes input media to common types:
+            // - images -> PNG
+            // - video -> MP4 (H.264) with limited resolution
+            // - audio -> WAV
+            // Returns Promise<normalizedPath>
+            return new Promise((resolve, reject) => {
+                const ext = path.extname(inputPath).toLowerCase();
+                const id = opts.id || 'out';
+                const outDir = opts.uploadDir || path.dirname(inputPath);
+                if (['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(ext)) {
+                    // convert images to PNG
+                    const out = path.join(outDir, `${id}.png`);
+                    ffmpeg(inputPath)
+                        .outputOptions(['-y'])
+                        .toFormat('png')
+                        .on('end', () => resolve(out))
+                        .on('error', reject)
+                        .save(out);
+                    return;
+                }
+                if (['.mp4', '.mov', '.mkv', '.webm', '.avi'].includes(ext)) {
+                    // convert video to MP4 h264 720p
+                    const out = path.join(outDir, `${id}.mp4`);
+                    ffmpeg(inputPath)
+                        .videoCodec('libx264')
+                        .size('?x720')
+                        .outputOptions(['-preset', 'fast', '-crf', '28', '-y'])
+                        .toFormat('mp4')
+                        .on('end', () => resolve(out))
+                        .on('error', reject)
+                        .save(out);
+                    return;
+                }
+                if (['.mp3', '.wav', '.aac', '.m4a', '.ogg'].includes(ext)) {
+                    const out = path.join(outDir, `${id}.wav`);
+                    ffmpeg(inputPath)
+                        .noVideo()
+                        .toFormat('wav')
+                        .outputOptions(['-ar', '16000', '-ac', '1', '-y'])
+                        .on('end', () => resolve(out))
+                        .on('error', reject)
+                        .save(out);
+                    return;
+                }
+                // default: just copy
+                const dest = path.join(outDir, `${id}${ext}`);
+                fs.copyFileSync(inputPath, dest);
+                resolve(dest);
+            });
+        }
+
+        module.exports = {
+            transcodeFile
+        };
+    </script>
+    <script>
+        // server.js — main API + static preview
+        const express = require('express');
+        const multer = require('multer');
+        const path = require('path');
+        const fs = require('fs');
+        const {
+            transcodeFile
+        } = require('./transcode');
+        const {
+            routeToModel
+        } = require('./modelRouter');
+        const {
+            generateAssetsFromModel
+        } = require('./assetGenerator');
+        const {
+            selectBestOutput
+        } = require('./selector');
+        const {
+            v4: uuidv4
+        } = require('uuid');
+        const bodyParser = require('body-parser');
+
+        const UPLOAD_DIR = path.resolve(__dirname, 'uploads');
+        const BUNDLE_DIR = path.resolve(__dirname, 'bundles');
+        if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR);
+        if (!fs.existsSync(BUNDLE_DIR)) fs.mkdirSync(BUNDLE_DIR);
+
+        const upload = multer({
+            dest: UPLOAD_DIR
+        });
+        const app = express();
+        app.use(bodyParser.json());
+        app.use(express.static(path.join(__dirname, 'public')));
+        app.use('/assets', express.static(BUNDLE_DIR));
+
+        /**
+         * POST /upload
+         * Form field: file (image/video/audio)
+         * Optional JSON metadata in field 'meta'
+         *
+         * Returns: { bundleId }
+         *
+         * Flow:
+         *  - save upload
+         *  - transcode/normalize
+         *  - route to appropriate model pipeline
+         *  - generate candidates
+         *  - score + select best
+         *  - package assets into a bundle folder
+         */
+        app.post('/upload', upload.single('file'), async(req, res) => {
+            try {
+                const file = req.file;
+                const meta = req.body.meta ? JSON.parse(req.body.meta) : {};
+                if (!file) return res.status(400).json({
+                    error: 'file required'
+                });
+
+                const id = uuidv4();
+                console.log(`[${id}] Uploaded: ${file.originalname} -> ${file.path}`);
+
+                // 1) Transcode / normalize
+                const normalized = await transcodeFile(file.path, {
+                    id,
+                    uploadDir: UPLOAD_DIR
+                });
+                console.log(`[${id}] Normalized to: ${normalized}`);
+
+                // 2) Route to model pipelines (decide which networks to call)
+                const route = routeToModel({
+                    path: normalized,
+                    meta
+                });
+                console.log(`[${id}] Routed to model pipeline:`, route);
+
+                // 3) Call model(s) to generate candidate assets (stubbed)
+                const candidates = await generateAssetsFromModel(route, {
+                    id,
+                    meta
+                });
+                console.log(`[${id}] Candidate outputs:`, candidates.map(c => c.type));
+
+                // 4) Score and select best output
+                const winner = selectBestOutput(candidates);
+                console.log(`[${id}] Selected best output:`, winner.type);
+
+                // 5) Package asset(s) into bundle directory
+                const bundleDir = path.join(BUNDLE_DIR, id);
+                fs.mkdirSync(bundleDir);
+                // write metadata and assets (assets are base64 data in stub)
+                const manifest = {
+                    id,
+                    createdAt: Date.now(),
+                    input: file.originalname,
+                    meta,
+                    winner: winner.type,
+                    assets: []
+                };
+                for (let i = 0; i < winner.assets.length; i++) {
+                    const asset = winner.assets[i];
+                    const assetName = `${asset.type}-${i}.${asset.ext}`;
+                    const assetPath = path.join(bundleDir, assetName);
+                    fs.writeFileSync(assetPath, Buffer.from(asset.data, 'base64'));
+                    manifest.assets.push({
+                        name: assetName,
+                        type: asset.type,
+                        path: `/assets/${id}/${assetName}`
+                    });
+                }
+                fs.writeFileSync(path.join(bundleDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+                console.log(`[${id}] Bundle packaged at ${bundleDir}`);
+
+                res.json({
+                    bundleId: id,
+                    manifest
+                });
+            } catch (err) {
+                console.error('upload error', err);
+                res.status(500).json({
+                    error: String(err)
+                });
+            }
+        });
+
+        /**
+         * GET /bundle/:id
+         * Serve manifest for preview
+         */
+        app.get('/bundle/:id', async(req, res) => {
+            const id = req.params.id;
+            const manifestPath = path.join(BUNDLE_DIR, id, 'manifest.json');
+            if (!fs.existsSync(manifestPath)) return res.status(404).json({
+                error: 'bundle not found'
+            });
+            res.sendFile(manifestPath);
+        });
+
+        // simple health
+        app.get('/health', (req, res) => res.json({
+            ok: true
+        }));
+
+        const port = process.env.PORT || 3000;
+        app.listen(port, () => console.log(`Prototype server running on http://localhost:${port}`));
+    </script>
+</body>
+
+</html>
+
+</html>

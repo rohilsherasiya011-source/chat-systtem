@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>GPay Clone — Profile</title>
+  <link rel="stylesheet" href="style.css">
+<style>
+    body {
+  margin:0; font-family: system-ui, sans-serif; background:#f5f7fb; color:#000;
+}
+.container{padding:16px; max-width:480px; margin:0 auto;}
+.topbar{display:flex; align-items:center; margin-bottom:16px;}
+.user-info{display:flex; align-items:center; gap:12px;}
+.avatar{width:56px; height:56px; border-radius:50%; background:#0b63d6; color:#fff; display:flex; justify-content:center; align-items:center; font-size:24px; position:relative;}
+.qr-icon{position:absolute; bottom:0; right:0; font-size:14px; background:#fff; border-radius:50%; padding:2px;}
+.details h2{margin:0; font-size:18px;}
+.details p{margin:2px 0 0 0; font-size:14px; color:#555;}
+
+.rewards{display:flex; gap:10px; margin-bottom:16px;}
+.reward-card{flex:1; background:#e8e6ff; padding:12px; border-radius:12px; text-align:center;}
+.reward-card.refer{background:#d6f0ff;}
+
+.methods h3{margin-bottom:8px; font-size:16px;}
+.method-grid{display:flex; gap:10px; margin-bottom:16px;}
+.method{flex:1; background:#fff; padding:12px; border-radius:12px; text-align:center; border:1px solid #eee;}
+.method .circle{width:40px; height:40px; background:#f0f0f0; margin:0 auto 6px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;}
+.method small{display:block; color:#888;}
+
+.options .option{display:flex; align-items:center; justify-content:space-between; background:#fff; padding:12px; margin-bottom:8px; border-radius:12px; border:1px solid #eee;}
+.options .option span{font-size:24px; margin-right:12px;}
+.options .option div p{margin:0; font-weight:500;}
+.options .option div small{font-size:12px; color:#888;}
+.options button{background:#0b63d6; color:#fff; border:none; padding:6px 12px; border-radius:8px; cursor:pointer;}
+
+.bottom-nav{position:fixed; bottom:0; left:0; width:100%; max-width:480px; display:flex; justify-content:space-around; padding:8px 0; background:#fff; border-top:1px solid #ccc;}
+.tab{display:flex; flex-direction:column; align-items:center; font-size:14px; color:#888;}
+.tab.active{color:#0b63d6;}
+.tab span{font-size:12px; margin-top:2px;}
+
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top User Info -->
+    <header class="topbar">
+      <div class="user-info">
+        <div class="avatar">R<div class="qr-icon">📷</div></div>
+        <div class="details">
+          <h2>Rohil Sherasiya</h2>
+          <p>7984657804</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Rewards / Refer -->
+    <section class="rewards">
+      <div class="reward-card">
+        <p><strong>2 rewards</strong></p>
+        <span>View now</span>
+      </div>
+      <div class="reward-card refer">
+        <p>Get ₹201</p>
+        <span>Refer a friend</span>
+      </div>
+    </section>
+
+    <!-- Payment Methods -->
+    <section class="methods">
+      <h3>Set up payment methods 0/3</h3>
+      <div class="method-grid">
+        <div class="method">
+          <div class="circle">🏦</div>
+          <span>Send money</span>
+          <small>Bank account</small>
+        </div>
+        <div class="method">
+          <div class="circle">💳</div>
+          <span>RuPay credit card</span>
+          <small>Pay with UPI</small>
+        </div>
+        <div class="method">
+          <div class="circle">⚡</div>
+          <span>UPI Lite</span>
+          <small>Pay PIN-free</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- Other Options -->
+    <section class="options">
+      <div class="option">
+        <span>💳</span>
+        <div>
+          <p>Pay with credit or debit cards</p>
+          <small>Contactless payments, bills, and more</small>
+        </div>
+        <button>Add</button>
+      </div>
+      <div class="option">
+        <span>🔲</span>
+        <div>
+          <p>Your QR code</p>
+          <small>Use to receive money from any UPI app</small>
+        </div>
+      </div>
+      <div class="option">
+        <span>❤️</span>
+        <div>
+          <p>UPI Circle <small>New</small></p>
+          <small>Help people you trust make UPI payments</small>
+        </div>
+      </div>
+      <div class="option">
+        <span>⚙️</span>
+        <div>
+          <p>Settings</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <div class="tab">🏠<span>Home</span></div>
+    <div class="tab">💰<span>Money</span></div>
+    <div class="tab active">🧑<span>You</span></div>
+  </nav>
+</body>
+</html>

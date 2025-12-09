@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Google Pay Neon Portal</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+/* ================================
+   GLOBAL FONTS + RESET
+=================================*/
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+}
+body{
+    overflow:hidden;
+}
+
+/* ================================
+   PARTICLE BACKGROUND CANVAS
+=================================*/
+#particles{
+    position:fixed;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    z-index:-3;
+}
+
+/* ================================
+   FIRE / SPARKS CANVAS
+=================================*/
+#sparks{
+    position:fixed;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    z-index:-2;
+    pointer-events:none;
+}
+
+/* ================================
+   DARK / LIGHT MODE BUTTON
+=================================*/
+.theme-btn{
+    position:fixed;
+    top:20px;
+    right:20px;
+    background:#ffffff66;
+    backdrop-filter:blur(5px);
+    font-size:26px;
+    border:none;
+    padding:8px 15px;
+    border-radius:12px;
+    cursor:pointer;
+    z-index:10;
+    transition:0.3s;
+}
+.theme-btn:hover{
+    transform:scale(1.12);
+}
+
+/* ================================
+   3D GOOGLE PAY FLOATING BUTTON
+=================================*/
+.gp3d-container{
+    position:fixed;
+    bottom:40px;
+    right:40px;
+    z-index:20;
+}
+.gp3d-btn{
+    width:110px;
+    height:110px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    background:linear-gradient(145deg,#ffffff70,#00000020);
+    backdrop-filter:blur(8px);
+    box-shadow:
+        0 0 25px #ff00ff,
+        inset 0 0 20px #ffffff28;
+    transition:0.3s;
+    animation:float3D 4s infinite ease-in-out;
+}
+@keyframes float3D{
+    0%{transform:translateY(0) rotateX(0deg) rotateY(0deg);}
+    50%{transform:translateY(-20px) rotateX(15deg) rotateY(15deg);}
+    100%{transform:translateY(0) rotateX(0deg) rotateY(0deg);}
+}
+.gp3d-btn img{
+    width:70%;
+}
+
+/* ================================
+   MAIN CARD
+=================================*/
+.wrapper{
+    display:flex;
+    justify-content:center;
+    margin-top:80px;
+}
+.neon-card{
+    width:430px;
+    padding:35px;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter:blur(14px);
+    border-radius:25px;
+    border:2px solid rgba(255,255,255,0.25);
+    text-align:center;
+    box-shadow:0 0 25px #d000ff;
+    animation:fadeIn 1s ease;
+}
+@keyframes fadeIn{
+    0%{transform:translateY(40px);opacity:0;}
+    100%{transform:translateY(0);opacity:1;}
+}
+.neon-title{
+    font-size:32px;
+    color:#fff;
+    text-shadow:0 0 12px #ff00ff;
+}
+.subtitle{
+    color:#ddd;
+    margin:8px 0 20px;
+}
+.amount-box{
+    padding:12px;
+    border-radius:15px;
+    background:rgba(255,255,255,0.15);
+    margin-bottom:25px;
+}
+.amount-box span{
+    color:#ff99ff;
+    font-size:28px;
+}
+
+/* ================================
+   MAIN PAY BUTTON
+=================================*/
+.neon-btn{
+    width:100%;
+    padding:16px;
+    font-size:20px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(90deg,#ff00ff,#7b2cbf);
+    color:white;
+    box-shadow:0 0 12px #ff00ff;
+    cursor:pointer;
+    transition:0.3s;
+}
+.neon-btn:hover{
+    transform:scale(1.08);
+    box-shadow:0 0 25px #ff00ff;
+}
+
+.or-text{
+    color:#ccc;
+    margin:20px 0;
+}
+
+/* ================================
+   QR CODE
+=================================*/
+.qr-area img{
+    width:180px;
+    background:white;
+    border-radius:12px;
+    padding:10px;
+}
+
+/* ================================
+   PAYMENT HISTORY BUTTON
+=================================*/
+.history-btn{
+    width:100%;
+    margin-top:20px;
+    padding:14px;
+    border-radius:10px;
+    border:none;
+    background:#ffffff22;
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+}
+.history-btn:hover{
+    background:#ffffff44;
+}
+
+/* ================================
+   LOADER
+=================================*/
+.loader{
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:#000000d0;
+    z-index:30;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    color:white;
+    font-size:22px;
+}
+.hidden{display:none;}
+.spinner{
+    width:70px;
+    height:70px;
+    border:6px solid #ffffff44;
+    border-radius:50%;
+    border-top-color:#ff00ff;
+    animation:spin 1s linear infinite;
+}
+@keyframes spin{
+    to{transform:rotate(360deg);}
+}
+
+/* ================================
+   SUCCESS POPUP
+=================================*/
+.success-popup{
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:#000000c0;
+    z-index:40;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+.popup-card{
+    background:white;
+    padding:30px;
+    width:320px;
+    border-radius:18px;
+    text-align:center;
+}
+
+/* ================================
+   HISTORY PAGE
+=================================*/
+.history-page{
+    position:fixed;
+    inset:0;
+    background:#000000e0;
+    color:white;
+    z-index:50;
+    padding:20px;
+    overflow-y:auto;
+}
+#historyList{
+    list-style:none;
+    padding:0;
+}
+#historyList li{
+    background:#ffffff22;
+    padding:12px;
+    border-radius:10px;
+    margin:10px 0;
+}
+#backBtn{
+    margin-top:20px;
+    padding:12px 20px;
+    background:#7b2cbf;
+    border:none;
+    color:white;
+    border-radius:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- 🌌 Infinite Particle Background -->
+<canvas id="particles"></canvas>
+
+<!-- 🔥 Fire Sparks Animation -->
+<canvas id="sparks"></canvas>
+
+<!-- 🌗 Dark-Light Toggle -->
+<button id="themeToggle" class="theme-btn">🌙</button>
+
+<!-- 🎧 Background Music -->
+<audio id="bgMusic" loop>
+    <source src="https://files.catbox.moe/pszf0r.mp3" type="audio/mp3">
+</audio>
+
+<!-- 🌐 3D Floating Google Pay Button -->
+<div class="gp3d-container">
+    <button id="gp3dButton" class="gp3d-btn">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png">
+    </button>
+</div>
+
+<!-- 🧊 MAIN PAYMENT CARD -->
+<div class="wrapper">
+    <div class="neon-card">
+
+        <h1 class="neon-title">⚡ Google Pay Neon Portal</h1>
+        <p class="subtitle">3D • Fire • Neon • Particle UI</p>
+
+        <div class="amount-box">
+            <h2>Amount: <span>₹10.00</span></h2>
+        </div>
+
+        <button id="payNow" class="neon-btn">Pay with Google Pay</button>
+
+        <p class="or-text">OR Scan QR</p>
+
+        <div class="qr-area">
+            <img id="qrImg">
+        </div>
+
+        <button id="historyBtn" class="history-btn">📜 View Payment History</button>
+
+    </div>
+</div>
+
+<!-- ⏳ Loader -->
+<div id="loader" class="loader hidden">
+    <div class="spinner"></div>
+    <p>Processing Payment...</p>
+</div>
+
+<!-- 🎉 Success Popup -->
+<div id="successPopup" class="success-popup hidden">
+    <div class="popup-card">
+        <h1>🎉 Payment Successful!</h1>
+        <p>Your transaction was saved in history.</p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+</div>
+
+<!-- 📜 Payment History Page -->
+<div id="historyPage" class="history-page hidden">
+    <h1>📜 Payment History</h1>
+    <ul id="historyList"></ul>
+    <button id="backBtn">⬅ Back</button>
+</div>
+
+<script>
+  /* =======================================
+   BACKGROUND MUSIC
+=======================================*/
+const bgMusic = document.getElementById("bgMusic");
+setTimeout(() => bgMusic.play(), 1500);
+
+/* =======================================
+   BASIC UPI PAYMENT LINK
+=======================================*/
+const upiLink =
+"upi://pay?pa=yourupi@bank&pn=Your%20Name&tn=NeonPortal&am=10&cu=INR";
+
+/* QR GENERATE */
+document.getElementById("qrImg").src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + upiLink;
+
+/* =======================================
+   BUTTONS
+=======================================*/
+const payBtn = document.getElementById("payNow");
+const gp3dButton = document.getElementById("gp3dButton");
+const loader = document.getElementById("loader");
+const successPopup = document.getElementById("successPopup");
+const historyPage = document.getElementById("historyPage");
+const historyList = document.getElementById("historyList");
+const historyBtn = document.getElementById("historyBtn");
+const backBtn = document.getElementById("backBtn");
+
+/* =======================================
+   PAYMENT FUNCTION
+=======================================*/
+function startPayment() {
+    loader.classList.remove("hidden");
+
+    // Go to UPI App
+    setTimeout(() => {
+        window.location.href = upiLink;
+    }, 1800);
+
+    // After 4 seconds, assume success (demo)
+    setTimeout(() => {
+        loader.classList.add("hidden");
+        successPopup.classList.remove("hidden");
+
+        savePaymentHistory();
+
+    }, 4500);
+}
+
+payBtn.onclick = startPayment;
+gp3dButton.onclick = startPayment;
+
+/* =======================================
+   SAVE PAYMENT HISTORY (LOCALSTORAGE)
+=======================================*/
+function savePaymentHistory() {
+    let history = JSON.parse(localStorage.getItem("payments")) || [];
+
+    let entry = {
+        amount: "₹10",
+        time: new Date().toLocaleString(),
+        id: Math.floor(Math.random() * 999999)
+    };
+
+    history.push(entry);
+    localStorage.setItem("payments", JSON.stringify(history));
+}
+
+/* =======================================
+   SHOW PAYMENT HISTORY PAGE
+=======================================*/
+historyBtn.onclick = () => {
+    historyPage.classList.remove("hidden");
+    loadHistory();
+};
+backBtn.onclick = () => {
+    historyPage.classList.add("hidden");
+};
+
+function loadHistory() {
+    historyList.innerHTML = "";
+    const history = JSON.parse(localStorage.getItem("payments")) || [];
+
+    if (history.length === 0) {
+        historyList.innerHTML = "<p>No payments found.</p>";
+        return;
+    }
+
+    history.forEach(h => {
+        let li = document.createElement("li");
+        li.innerHTML = `<b>Amount:</b> ${h.amount}<br>
+                        <b>Time:</b> ${h.time}<br>
+                        <b>ID:</b> ${h.id}`;
+        historyList.appendChild(li);
+    });
+}
+
+/* =======================================
+   CLOSE POPUP
+=======================================*/
+function closePopup() {
+    successPopup.classList.add("hidden");
+}
+
+/* =======================================
+   DARK / LIGHT MODE TOGGLE
+=======================================*/
+const themeToggle = document.getElementById("themeToggle");
+let dark = true;
+
+themeToggle.onclick = () => {
+    dark = !dark;
+    if (dark) {
+        document.body.style.filter = "invert(0)";
+        themeToggle.textContent = "🌙";
+    } else {
+        document.body.style.filter = "invert(1)";
+        themeToggle.textContent = "☀️";
+    }
+};
+
+/* =======================================
+   PARTICLE BACKGROUND ENGINE
+=======================================*/
+const pCanvas = document.getElementById("particles");
+const pCtx = pCanvas.getContext("2d");
+
+pCanvas.width = innerWidth;
+pCanvas.height = innerHeight;
+
+let particles = [];
+
+for (let i = 0; i < 120; i++) {
+    particles.push({
+        x: Math.random() * pCanvas.width,
+        y: Math.random() * pCanvas.height,
+        size: Math.random() * 3 + 1,
+        speed: Math.random() * 1 + 0.3
+    });
+}
+
+function drawParticles() {
+    pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+    pCtx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    particles.forEach(p => {
+        pCtx.beginPath();
+        pCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        pCtx.fill();
+
+        p.y += p.speed;
+        if (p.y > pCanvas.height) {
+            p.y = 0;
+            p.x = Math.random() * pCanvas.width;
+        }
+    });
+
+    requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+/* =======================================
+   FIRE SPARKS ENGINE
+=======================================*/
+const sCanvas = document.getElementById("sparks");
+const sCtx = sCanvas.getContext("2d");
+
+sCanvas.width = innerWidth;
+sCanvas.height = innerHeight;
+
+let sparks = [];
+
+function makeSpark() {
+    sparks.push({
+        x: Math.random() * sCanvas.width,
+        y: sCanvas.height,
+        size: Math.random() * 4,
+        speedY: Math.random() * -4 - 2,
+        alpha: 1
+    });
+}
+setInterval(makeSpark, 80);
+
+function drawSparks() {
+    sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+
+    sparks.forEach((s, i) => {
+        sCtx.fillStyle = `rgba(255,100,0,${s.alpha})`;
+        sCtx.beginPath();
+        sCtx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+        sCtx.fill();
+
+        s.y += s.speedY;
+        s.alpha -= 0.02;
+
+        if (s.alpha <= 0) sparks.splice(i, 1);
+    });
+
+    requestAnimationFrame(drawSparks);
+}
+drawSparks();
+ 
+</script>
+</body>
+</html>
